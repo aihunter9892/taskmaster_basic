@@ -78,10 +78,17 @@
                 animation: 150,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'task-card--chosen',
-                onEnd: () => {
+                onEnd: (evt) => {
                     syncOrder();
                     updateColumnCounts();
                     checkEmptyColumns();
+                    // Fire balloons when a card is dropped into the Done column
+                    const toColumn = evt.to.closest('.column');
+                    if (toColumn && toColumn.dataset.status === 'done') {
+                        if (typeof window.launchBalloons === 'function') {
+                            window.launchBalloons();
+                        }
+                    }
                 },
             });
         });

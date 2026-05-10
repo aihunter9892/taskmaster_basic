@@ -7,13 +7,15 @@
     <title>{% block title %}TaskFlow{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    {% block head %}{% endblock %}
 </head>
 <body>
     <nav class="nav">
         <div class="nav__container">
             <a href="{{ url_for('tasks.dashboard') if current_user.is_authenticated else url_for('auth.login') }}" class="nav__logo">
-                <span class="nav__logo-icon">✓</span>
+                <span class="nav__logo-icon" aria-hidden="true">✓</span>
                 TaskFlow
             </a>
             {% if current_user.is_authenticated %}
@@ -79,7 +81,7 @@
     {% if current_user.is_authenticated %}
     <!-- Floating Timer Widget -->
     <div class="timer-widget" id="timer-widget">
-        <div class="timer-header" id="timer-minimize-btn" title="Minimize">
+        <div class="timer-header" id="timer-minimize-btn" title="Minimize" role="button" tabindex="0" aria-label="Minimize timer">
             <span class="timer-header__title" id="timer-task-label">Pomodoro Timer</span>
             <div class="timer-header__btns">
                 <button class="timer-header__btn" id="timer-task-picker-btn" title="Pick task">🎯</button>
@@ -109,6 +111,7 @@
     {% if current_user.is_authenticated %}
     <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
     {% endif %}
+    <script src="{{ url_for('static', filename='js/animations.js') }}" defer></script>
 
     <script>
     document.querySelectorAll('.flash__close').forEach(btn => {

@@ -74,7 +74,8 @@
                     <div class="template-card__actions">
                         <button class="task-card__btn task-card__btn--delete"
                                 onclick="deleteTemplate({{ tmpl.id }}, this)"
-                                title="Delete template">✕</button>
+                                title="Delete template"
+                                aria-label="Delete template {{ tmpl.title }}">✕</button>
                     </div>
                 </div>
                 <div class="template-card__meta">
@@ -111,33 +112,33 @@
 <dialog id="new-template-modal" class="modal">
     <div class="modal__header">
         <h2 class="modal__title">New Template</h2>
-        <button class="modal__close" onclick="document.getElementById('new-template-modal').close()">×</button>
+        <button class="modal__close" onclick="document.getElementById('new-template-modal').close()" aria-label="Close">×</button>
     </div>
     <form method="POST" action="{{ url_for('tasks.create_template') }}" novalidate>
         {{ form.hidden_tag() }}
         <div class="modal__body">
             <div class="form-row">
                 <div class="form-group" style="flex:0 0 60px; min-width:60px; max-width:80px;">
-                    <label class="form-label">Emoji</label>
-                    {{ form.emoji(class="form-control", placeholder="📋", style="text-align:center; font-size:1.25rem;") }}
+                    <label class="form-label" for="t-emoji">Emoji</label>
+                    {{ form.emoji(class="form-control", placeholder="📋", style="text-align:center; font-size:1.25rem;", id="t-emoji") }}
                 </div>
                 <div class="form-group" style="flex:1;">
-                    <label class="form-label">Title *</label>
-                    {{ form.title(class="form-control", placeholder="Template name") }}
+                    <label class="form-label" for="t-title">Title *</label>
+                    {{ form.title(class="form-control", placeholder="Template name", id="t-title") }}
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Description</label>
-                {{ form.description(class="form-control", placeholder="What does this task involve?", rows=3) }}
+                <label class="form-label" for="t-description">Description</label>
+                {{ form.description(class="form-control", placeholder="What does this task involve?", rows=3, id="t-description") }}
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Priority</label>
-                    {{ form.priority(class="form-control") }}
+                    <label class="form-label" for="t-priority">Priority</label>
+                    {{ form.priority(class="form-control", id="t-priority") }}
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Estimated (minutes)</label>
-                    {{ form.estimated_minutes(class="form-control", placeholder="e.g. 30") }}
+                    <label class="form-label" for="t-est">Estimated (minutes)</label>
+                    {{ form.estimated_minutes(class="form-control", placeholder="e.g. 30", id="t-est") }}
                 </div>
             </div>
         </div>

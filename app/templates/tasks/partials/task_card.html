@@ -1,3 +1,4 @@
+{% set today = today | default(none) %}
 <article class="task-card task-card--{{ task.priority }}" data-task-id="{{ task.id }}" draggable="true">
     <div class="task-card__meta">
         <span class="priority-badge priority-badge--{{ task.priority }}">
@@ -7,9 +8,10 @@
         <div class="task-card__actions">
             <button class="task-card__btn task-card__btn--timer"
                     onclick="startTimerForTask({{ task.id }}, {{ task.title|tojson }})"
-                    title="Start timer">⏱</button>
-            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="task-card__btn" title="Edit">✎</a>
-            <button class="task-card__btn task-card__btn--delete" onclick="deleteTask({{ task.id }})" title="Delete">✕</button>
+                    title="Start timer"
+                    aria-label="Start timer for {{ task.title }}">⏱</button>
+            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="task-card__btn" title="Edit" aria-label="Edit {{ task.title }}">✎</a>
+            <button class="task-card__btn task-card__btn--delete" onclick="deleteTask({{ task.id }})" title="Delete" aria-label="Delete {{ task.title }}">✕</button>
         </div>
     </div>
 
@@ -28,8 +30,8 @@
             {% endif %}
 
             {% if task.due_date %}
-            <span class="due-date {% if task.due_date < today %}due-date--overdue{% endif %}">
-                {% if task.due_date < today %}⚠{% else %}📅{% endif %}
+            <span class="due-date {% if today and task.due_date < today %}due-date--overdue{% endif %}">
+                {% if today and task.due_date < today %}⚠{% else %}📅{% endif %}
                 {{ task.due_date.strftime('%b %d') }}
             </span>
             {% endif %}
@@ -39,7 +41,7 @@
             {% endif %}
         </div>
 
-        {% if task.total_time_seconds > 0 %}
+        {% if task.total_time_seconds and task.total_time_seconds > 0 %}
         <span class="task-card__time" title="Time logged">
             🕐 {% set h = task.total_time_seconds // 3600 %}{% set m = (task.total_time_seconds % 3600) // 60 %}{% if h %}{{ h }}h {% endif %}{{ m }}m
         </span>

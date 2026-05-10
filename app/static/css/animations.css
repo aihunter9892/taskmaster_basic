@@ -1,0 +1,45 @@
+/* ── Card Entrance Animations ── */
+.task-card {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.task-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Button Press Feedback ── */
+.btn:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
+}
+
+/* ── Balloon Celebration ── */
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes floatUp {
+        0%   { transform: translateY(0) translateX(0); }
+        50%  { transform: translateY(-50vh) translateX(15px); }
+        100% { transform: translateY(-110vh) translateX(-10px); }
+    }
+
+    .balloon {
+        position: fixed;
+        z-index: 9999;
+        width: 40px;
+        height: 55px;
+        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        pointer-events: none;
+        animation: floatUp 3s ease-in forwards;
+    }
+
+    .balloon::after {
+        content: "";
+        display: block;
+        width: 1px;
+        height: 20px;
+        background: rgba(0, 0, 0, 0.3);
+        margin: 0 auto;
+    }
+}

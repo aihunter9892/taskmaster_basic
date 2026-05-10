@@ -17,21 +17,21 @@
     <form method="GET" action="{{ url_for('tasks.task_list') }}" class="list-filters">
         <input type="text" name="q" class="list-filters__search" placeholder="Search tasks…" value="{{ search }}">
 
-        <select name="status" class="filter-select" onchange="this.form.submit()">
+        <select name="status" class="filter-select" aria-label="Filter by status" onchange="this.form.submit()">
             <option value="" {% if not status_filter %}selected{% endif %}>All Status</option>
             <option value="todo" {% if status_filter == 'todo' %}selected{% endif %}>To Do</option>
             <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
             <option value="done" {% if status_filter == 'done' %}selected{% endif %}>Done</option>
         </select>
 
-        <select name="priority" class="filter-select" onchange="this.form.submit()">
+        <select name="priority" class="filter-select" aria-label="Filter by priority" onchange="this.form.submit()">
             <option value="" {% if not priority_filter %}selected{% endif %}>All Priority</option>
             <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
             <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
             <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
         </select>
 
-        <select name="sort" class="filter-select" onchange="this.form.submit()">
+        <select name="sort" class="filter-select" aria-label="Sort tasks" onchange="this.form.submit()">
             <option value="created_desc" {% if sort == 'created_desc' %}selected{% endif %}>Newest First</option>
             <option value="created_asc"  {% if sort == 'created_asc'  %}selected{% endif %}>Oldest First</option>
             <option value="due_asc"      {% if sort == 'due_asc'      %}selected{% endif %}>Due: Soonest</option>
@@ -121,12 +121,12 @@
                         <div class="task-table__actions">
                             <button class="task-card__btn task-card__btn--timer"
                                     onclick="startTimerForTask({{ task.id }}, {{ task.title|tojson }})"
-                                    title="Start timer" style="opacity:1;">⏱</button>
+                                    title="Start timer" aria-label="Start timer for {{ task.title }}" style="opacity:1;">⏱</button>
                             <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}"
-                               class="task-card__btn" title="Edit" style="opacity:1;">✎</a>
+                               class="task-card__btn" title="Edit" aria-label="Edit {{ task.title }}" style="opacity:1;">✎</a>
                             <button class="task-card__btn task-card__btn--delete"
                                     onclick="deleteTaskAndRow({{ task.id }}, this)"
-                                    title="Delete" style="opacity:1;">✕</button>
+                                    title="Delete" aria-label="Delete {{ task.title }}" style="opacity:1;">✕</button>
                         </div>
                     </td>
                 </tr>
@@ -151,42 +151,42 @@
 <dialog id="list-task-modal" class="modal">
     <div class="modal__header">
         <h2 class="modal__title">New Task</h2>
-        <button class="modal__close" onclick="document.getElementById('list-task-modal').close()">×</button>
+        <button class="modal__close" onclick="document.getElementById('list-task-modal').close()" aria-label="Close">×</button>
     </div>
     <form method="POST" action="{{ url_for('tasks.create_task') }}" novalidate>
         {{ task_form.hidden_tag() }}
         <div class="modal__body">
             <div class="form-group">
-                <label class="form-label">Title *</label>
-                {{ task_form.title(class="form-control", placeholder="What needs to be done?") }}
+                <label class="form-label" for="l-title">Title *</label>
+                {{ task_form.title(class="form-control", placeholder="What needs to be done?", id="l-title") }}
             </div>
             <div class="form-group">
-                <label class="form-label">Description</label>
-                {{ task_form.description(class="form-control", placeholder="Optional details…", rows=3) }}
+                <label class="form-label" for="l-description">Description</label>
+                {{ task_form.description(class="form-control", placeholder="Optional details…", rows=3, id="l-description") }}
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Priority</label>
-                    {{ task_form.priority(class="form-control") }}
+                    <label class="form-label" for="l-priority">Priority</label>
+                    {{ task_form.priority(class="form-control", id="l-priority") }}
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Status</label>
-                    {{ task_form.status(class="form-control") }}
+                    <label class="form-label" for="l-status">Status</label>
+                    {{ task_form.status(class="form-control", id="l-status") }}
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Due Date</label>
-                    {{ task_form.due_date(class="form-control") }}
+                    <label class="form-label" for="l-due-date">Due Date</label>
+                    {{ task_form.due_date(class="form-control", id="l-due-date") }}
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Category</label>
-                    {{ task_form.category_id(class="form-control") }}
+                    <label class="form-label" for="l-category">Category</label>
+                    {{ task_form.category_id(class="form-control", id="l-category") }}
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Estimated Time (minutes)</label>
-                {{ task_form.estimated_minutes(class="form-control", placeholder="e.g. 30") }}
+                <label class="form-label" for="l-est">Estimated Time (minutes)</label>
+                {{ task_form.estimated_minutes(class="form-control", placeholder="e.g. 30", id="l-est") }}
             </div>
         </div>
         <div class="modal__footer">
