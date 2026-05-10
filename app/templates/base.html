@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}TaskFlow{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav__container">
+            <a href="{{ url_for('tasks.dashboard') if current_user.is_authenticated else url_for('auth.login') }}" class="nav__logo">
+                <span class="nav__logo-icon">✓</span>
+                TaskFlow
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="nav__actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <span class="nav__user">{{ current_user.username }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn--outline btn--sm">Sign out</a>
+            </div>
+            {% else %}
+            <div class="nav__actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if current_user.is_authenticated %}
+    <div class="nav-tabs">
+        <div class="nav-tabs__inner">
+            <a href="{{ url_for('tasks.dashboard') }}"
+               class="nav-tab {% if request.endpoint == 'tasks.dashboard' %}nav-tab--active{% endif %}">
+                <span class="nav-tab__icon">⬛</span> Kanban
+            </a>
+            <a href="{{ url_for('tasks.task_list') }}"
+               class="nav-tab {% if request.endpoint == 'tasks.task_list' %}nav-tab--active{% endif %}">
+                <span class="nav-tab__icon">☰</span> All Tasks
+            </a>
+            <a href="{{ url_for('tasks.calendar_view') }}"
+               class="nav-tab {% if request.endpoint == 'tasks.calendar_view' %}nav-tab--active{% endif %}">
+                <span class="nav-tab__icon">📅</span> Calendar
+            </a>
+            <a href="{{ url_for('tasks.analytics') }}"
+               class="nav-tab {% if request.endpoint == 'tasks.analytics' %}nav-tab--active{% endif %}">
+                <span class="nav-tab__icon">📊</span> Analytics
+            </a>
+            <a href="{{ url_for('tasks.task_templates') }}"
+               class="nav-tab {% if request.endpoint in ('tasks.task_templates', 'tasks.create_template') %}nav-tab--active{% endif %}">
+                <span class="nav-tab__icon">⚡</span> Templates
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash flash--{{ category }}">
+                <span>{{ message }}</span>
+                <button class="flash__close" aria-label="Dismiss">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <main>{% block content %}{% endblock %}</main>
+
+    {% if current_user.is_authenticated %}
+    <!-- Floating Timer Widget -->
+    <div class="timer-widget" id="timer-widget">
+        <div class="timer-header" id="timer-minimize-btn" title="Minimize">
+            <span class="timer-header__title" id="timer-task-label">Pomodoro Timer</span>
+            <div class="timer-header__btns">
+                <button class="timer-header__btn" id="timer-task-picker-btn" title="Pick task">🎯</button>
+                <button class="timer-header__btn" id="timer-minimize" title="Minimize">—</button>
+                <button class="timer-header__btn" id="timer-close" title="Close">×</button>
+            </div>
+        </div>
+        <div class="timer-body">
+            <div class="timer-display" id="timer-display">25:00</div>
+            <div class="timer-mode" id="timer-mode">Focus</div>
+            <div class="timer-task-name" id="timer-task-name">No task selected</div>
+            <div class="timer-controls">
+                <button class="btn btn--primary btn--sm" id="timer-start">▶ Start</button>
+                <button class="btn btn--outline btn--sm" id="timer-pause" style="display:none">⏸ Pause</button>
+                <button class="btn btn--outline btn--sm" id="timer-reset">↺ Reset</button>
+            </div>
+            <div class="timer-progress">
+                <div class="timer-progress__bar" id="timer-bar" style="width:100%"></div>
+            </div>
+            <div class="timer-sessions" id="timer-sessions">Sessions today: 0</div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% block scripts %}{% endblock %}
+
+    {% if current_user.is_authenticated %}
+    <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+    {% endif %}
+
+    <script>
+    document.querySelectorAll('.flash__close').forEach(btn => {
+        btn.addEventListener('click', () => btn.closest('.flash').remove());
+    });
+    setTimeout(() => {
+        document.querySelectorAll('.flash').forEach(f => {
+            f.style.transition = 'opacity 0.4s ease';
+            f.style.opacity = '0';
+            setTimeout(() => f.remove(), 400);
+        });
+    }, 5000);
+    </script>
+</body>
+</html>

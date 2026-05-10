@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Templates — TaskFlow{% endblock %}
+
+{% block content %}
+<div class="templates-view">
+    <div class="templates-header">
+        <div>
+            <h1>Task Templates</h1>
+            <p style="color:var(--text-secondary); font-size:0.95rem; margin-top:0.25rem;">
+                One-click task creation. Click any template on the dashboard to instantly add it.
+            </p>
+        </div>
+        <button class="btn btn--primary" id="new-template-btn">+ New Template</button>
+    </div>
+
+    <!-- Default Templates Section -->
+    {% set default_tmpls = templates | selectattr('is_default') | list %}
+    {% set custom_tmpls  = templates | rejectattr('is_default') | list %}
+
+    {% if default_tmpls %}
+    <div style="margin-bottom:0.75rem;">
+        <p style="font-size:0.8125rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary); margin-bottom:0.875rem;">
+            ⚡ Built-in Templates
+        </p>
+        <div class="templates-grid">
+            {% for tmpl in default_tmpls %}
+            <div class="template-card template-card--default">
+                <div class="template-card__top">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.375rem;">
+                            <span class="template-card__emoji">{{ tmpl.emoji }}</span>
+                            <span class="template-card__title">{{ tmpl.title }}</span>
+                        </div>
+                        <p class="template-card__desc">{{ tmpl.description or 'No description.' }}</p>
+                    </div>
+                </div>
+                <div class="template-card__meta">
+                    <span class="priority-badge priority-badge--{{ tmpl.priority }}">
+                        {% if tmpl.priority == 'high' %}▲{% elif tmpl.priority == 'medium' %}●{% else %}▼{% endif %}
+                        {{ tmpl.priority }}
+                    </span>
+                    {% if tmpl.estimated_minutes %}
+                    <span class="est-badge">⏱ {{ tmpl.estimated_minutes }}m</span>
+                    {% endif %}
+                </div>
+                <div class="template-card__footer">
+                    <form method="POST" action="{{ url_for('tasks.use_template', tmpl_id=tmpl.id) }}" style="flex:1;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn--primary btn--sm btn--full">+ Add to To Do</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if custom_tmpls %}
+    <div>
+        <p style="font-size:0.8125rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary); margin-bottom:0.875rem;">
+            🎨 Your Templates
+        </p>
+        <div class="templates-grid">
+            {% for tmpl in custom_tmpls %}
+            <div class="template-card">
+                <div class="template-card__top">
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.375rem;">
+                            <span class="template-card__emoji">{{ tmpl.emoji }}</span>
+                            <span class="template-card__title">{{ tmpl.title }}</span>
+                        </div>
+                        <p class="template-card__desc">{{ tmpl.description or 'No description.' }}</p>
+                    </div>
+                    <div class="template-card__actions">
+                        <button class="task-card__btn task-card__btn--delete"
+                                onclick="deleteTemplate({{ tmpl.id }}, this)"
+                                title="Delete template">✕</button>
+                    </div>
+                </div>
+                <div class="template-card__meta">
+                    <span class="priority-badge priority-badge--{{ tmpl.priority }}">
+                        {% if tmpl.priority == 'high' %}▲{% elif tmpl.priority == 'medium' %}●{% else %}▼{% endif %}
+                        {{ tmpl.priority }}
+                    </span>
+                    {% if tmpl.estimated_minutes %}
+                    <span class="est-badge">⏱ {{ tmpl.estimated_minutes }}m</span>
+                    {% endif %}
+                </div>
+                <div class="template-card__footer">
+                    <form method="POST" action="{{ url_for('tasks.use_template', tmpl_id=tmpl.id) }}" style="flex:1;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn--primary btn--sm btn--full">+ Add to To Do</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not templates %}
+    <div class="task-table-wrap list-empty">
+        <div style="font-size:2.5rem;">⚡</div>
+        <p>No templates yet. Create your first one!</p>
+        <button class="btn btn--primary btn--sm" id="empty-new-btn" style="margin-top:1rem;">+ New Template</button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- New Template Modal -->
+<dialog id="new-template-modal" class="modal">
+    <div class="modal__header">
+        <h2 class="modal__title">New Template</h2>
+        <button class="modal__close" onclick="document.getElementById('new-template-modal').close()">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('tasks.create_template') }}" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="modal__body">
+            <div class="form-row">
+                <div class="form-group" style="flex:0 0 60px; min-width:60px; max-width:80px;">
+                    <label class="form-label">Emoji</label>
+                    {{ form.emoji(class="form-control", placeholder="📋", style="text-align:center; font-size:1.25rem;") }}
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">Title *</label>
+                    {{ form.title(class="form-control", placeholder="Template name") }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                {{ form.description(class="form-control", placeholder="What does this task involve?", rows=3) }}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    {{ form.priority(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estimated (minutes)</label>
+                    {{ form.estimated_minutes(class="form-control", placeholder="e.g. 30") }}
+                </div>
+            </div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--outline" onclick="document.getElementById('new-template-modal').close()">Cancel</button>
+            <button type="submit" class="btn btn--primary">Create Template</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const csrfToken = () => document.querySelector('meta[name="csrf-token"]').content;
+
+document.getElementById('new-template-btn')?.addEventListener('click', () => {
+    document.getElementById('new-template-modal').showModal();
+});
+document.getElementById('empty-new-btn')?.addEventListener('click', () => {
+    document.getElementById('new-template-modal').showModal();
+});
+
+async function deleteTemplate(id, btn) {
+    if (!confirm('Delete this template?')) return;
+    try {
+        const res = await fetch(`/templates/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': csrfToken() },
+        });
+        if (res.ok) {
+            const card = btn.closest('.template-card');
+            card.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => card.remove(), 200);
+        }
+    } catch (e) { console.error(e); }
+}
+</script>
+{% endblock %}

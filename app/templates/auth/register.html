@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — TaskFlow{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-card__logo">
+            <span class="auth-card__logo-icon">✓</span>
+            TaskFlow
+        </div>
+
+        <h1 class="auth-card__title">Create your account</h1>
+        <p class="auth-card__subtitle">Start organizing your tasks today</p>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                {{ form.username(class="form-control", id="username", placeholder="yourname", autocomplete="username") }}
+                {% for error in form.username.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                {{ form.email(class="form-control", id="email", placeholder="you@example.com", autocomplete="email") }}
+                {% for error in form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                {{ form.password(class="form-control", id="password", placeholder="Min. 8 characters", autocomplete="new-password") }}
+                {% for error in form.password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label" for="confirm_password">Confirm Password</label>
+                {{ form.confirm_password(class="form-control", id="confirm_password", placeholder="Repeat password", autocomplete="new-password") }}
+                {% for error in form.confirm_password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full btn--lg">Create Account</button>
+        </form>
+
+        <p class="auth-card__footer">
+            Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

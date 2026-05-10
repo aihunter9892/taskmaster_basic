@@ -1,0 +1,48 @@
+<article class="task-card task-card--{{ task.priority }}" data-task-id="{{ task.id }}" draggable="true">
+    <div class="task-card__meta">
+        <span class="priority-badge priority-badge--{{ task.priority }}">
+            {% if task.priority == 'high' %}▲{% elif task.priority == 'medium' %}●{% else %}▼{% endif %}
+            {{ task.priority }}
+        </span>
+        <div class="task-card__actions">
+            <button class="task-card__btn task-card__btn--timer"
+                    onclick="startTimerForTask({{ task.id }}, {{ task.title|tojson }})"
+                    title="Start timer">⏱</button>
+            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="task-card__btn" title="Edit">✎</a>
+            <button class="task-card__btn task-card__btn--delete" onclick="deleteTask({{ task.id }})" title="Delete">✕</button>
+        </div>
+    </div>
+
+    <h3 class="task-card__title">{{ task.title }}</h3>
+
+    {% if task.description %}
+    <p class="task-card__desc">{{ task.description }}</p>
+    {% endif %}
+
+    <div class="task-card__footer">
+        <div style="display:flex; gap:0.375rem; flex-wrap:wrap; align-items:center;">
+            {% if task.category %}
+            <span class="category-tag" style="background-color:{{ task.category.color }}22; color:{{ task.category.color }}; border-color:{{ task.category.color }}44;">
+                {{ task.category.name }}
+            </span>
+            {% endif %}
+
+            {% if task.due_date %}
+            <span class="due-date {% if task.due_date < today %}due-date--overdue{% endif %}">
+                {% if task.due_date < today %}⚠{% else %}📅{% endif %}
+                {{ task.due_date.strftime('%b %d') }}
+            </span>
+            {% endif %}
+
+            {% if task.estimated_minutes %}
+            <span class="task-card__time">⏱ {{ task.estimated_minutes }}m</span>
+            {% endif %}
+        </div>
+
+        {% if task.total_time_seconds > 0 %}
+        <span class="task-card__time" title="Time logged">
+            🕐 {% set h = task.total_time_seconds // 3600 %}{% set m = (task.total_time_seconds % 3600) // 60 %}{% if h %}{{ h }}h {% endif %}{{ m }}m
+        </span>
+        {% endif %}
+    </div>
+</article>

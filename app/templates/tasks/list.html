@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block title %}All Tasks — TaskFlow{% endblock %}
+
+{% block content %}
+<div class="list-view">
+    <div class="list-header">
+        <div>
+            <h1>All Tasks</h1>
+            <p style="color:var(--text-secondary); font-size:0.95rem; margin-top:0.25rem;">
+                {{ tasks|length }} task{{ 's' if tasks|length != 1 }} found
+            </p>
+        </div>
+        <button class="btn btn--primary" id="list-new-task-btn">+ New Task</button>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" action="{{ url_for('tasks.task_list') }}" class="list-filters">
+        <input type="text" name="q" class="list-filters__search" placeholder="Search tasks…" value="{{ search }}">
+
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="" {% if not status_filter %}selected{% endif %}>All Status</option>
+            <option value="todo" {% if status_filter == 'todo' %}selected{% endif %}>To Do</option>
+            <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="done" {% if status_filter == 'done' %}selected{% endif %}>Done</option>
+        </select>
+
+        <select name="priority" class="filter-select" onchange="this.form.submit()">
+            <option value="" {% if not priority_filter %}selected{% endif %}>All Priority</option>
+            <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+            <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+        </select>
+
+        <select name="sort" class="filter-select" onchange="this.form.submit()">
+            <option value="created_desc" {% if sort == 'created_desc' %}selected{% endif %}>Newest First</option>
+            <option value="created_asc"  {% if sort == 'created_asc'  %}selected{% endif %}>Oldest First</option>
+            <option value="due_asc"      {% if sort == 'due_asc'      %}selected{% endif %}>Due: Soonest</option>
+            <option value="due_desc"     {% if sort == 'due_desc'     %}selected{% endif %}>Due: Latest</option>
+            <option value="priority_desc"{% if sort == 'priority_desc'%}selected{% endif %}>Priority</option>
+            <option value="title_asc"    {% if sort == 'title_asc'    %}selected{% endif %}>Title A–Z</option>
+        </select>
+
+        <button type="submit" class="btn btn--outline btn--sm">Filter</button>
+        {% if search or status_filter or priority_filter %}
+        <a href="{{ url_for('tasks.task_list') }}" class="btn btn--ghost btn--sm">Clear</a>
+        {% endif %}
+    </form>
+
+    <!-- Task Table -->
+    {% if tasks %}
+    <div class="task-table-wrap">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="{{ url_for('tasks.task_list', q=search, status=status_filter, priority=priority_filter, sort='title_asc') }}">
+                            Task {% if sort == 'title_asc' %}↑{% endif %}
+                        </a>
+                    </th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>
+                        <a href="{{ url_for('tasks.task_list', q=search, status=status_filter, priority=priority_filter, sort='due_asc' if sort != 'due_asc' else 'due_desc') }}">
+                            Due {% if sort == 'due_asc' %}↑{% elif sort == 'due_desc' %}↓{% endif %}
+                        </a>
+                    </th>
+                    <th>Category</th>
+                    <th>Est.</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>
+                        <div class="task-table__title">{{ task.title }}</div>
+                        {% if task.description %}
+                        <div class="task-table__desc">{{ task.description }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-badge--{{ task.status }}">
+                            {% if task.status == 'todo' %}To Do
+                            {% elif task.status == 'in_progress' %}In Progress
+                            {% else %}Done{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="priority-badge priority-badge--{{ task.priority }}">
+                            {% if task.priority == 'high' %}▲{% elif task.priority == 'medium' %}●{% else %}▼{% endif %}
+                            {{ task.priority }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if task.due_date %}
+                        <span class="due-date {% if task.due_date < today and task.status != 'done' %}due-date--overdue{% endif %}">
+                            {% if task.due_date < today and task.status != 'done' %}⚠{% endif %}
+                            {{ task.due_date.strftime('%b %d, %Y') }}
+                        </span>
+                        {% else %}
+                        <span style="color:var(--text-muted); font-size:0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.category %}
+                        <span class="category-tag" style="background-color:{{ task.category.color }}22; color:{{ task.category.color }}; border-color:{{ task.category.color }}44;">
+                            {{ task.category.name }}
+                        </span>
+                        {% else %}
+                        <span style="color:var(--text-muted); font-size:0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.estimated_minutes %}
+                        <span class="est-badge">⏱ {{ task.estimated_minutes }}m</span>
+                        {% else %}
+                        <span style="color:var(--text-muted); font-size:0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="task-table__actions">
+                            <button class="task-card__btn task-card__btn--timer"
+                                    onclick="startTimerForTask({{ task.id }}, {{ task.title|tojson }})"
+                                    title="Start timer" style="opacity:1;">⏱</button>
+                            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}"
+                               class="task-card__btn" title="Edit" style="opacity:1;">✎</a>
+                            <button class="task-card__btn task-card__btn--delete"
+                                    onclick="deleteTaskAndRow({{ task.id }}, this)"
+                                    title="Delete" style="opacity:1;">✕</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="task-table-wrap list-empty">
+        <div style="font-size:2.5rem;">📋</div>
+        <p>No tasks found{% if search or status_filter or priority_filter %} matching your filters{% endif %}.</p>
+        {% if search or status_filter or priority_filter %}
+        <a href="{{ url_for('tasks.task_list') }}" class="btn btn--outline btn--sm" style="margin-top:1rem;">Clear filters</a>
+        {% else %}
+        <button class="btn btn--primary btn--sm" id="list-empty-new" style="margin-top:1rem;">Create your first task</button>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- New Task Modal -->
+<dialog id="list-task-modal" class="modal">
+    <div class="modal__header">
+        <h2 class="modal__title">New Task</h2>
+        <button class="modal__close" onclick="document.getElementById('list-task-modal').close()">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('tasks.create_task') }}" novalidate>
+        {{ task_form.hidden_tag() }}
+        <div class="modal__body">
+            <div class="form-group">
+                <label class="form-label">Title *</label>
+                {{ task_form.title(class="form-control", placeholder="What needs to be done?") }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                {{ task_form.description(class="form-control", placeholder="Optional details…", rows=3) }}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    {{ task_form.priority(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    {{ task_form.status(class="form-control") }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    {{ task_form.due_date(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    {{ task_form.category_id(class="form-control") }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Estimated Time (minutes)</label>
+                {{ task_form.estimated_minutes(class="form-control", placeholder="e.g. 30") }}
+            </div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--outline" onclick="document.getElementById('list-task-modal').close()">Cancel</button>
+            <button type="submit" class="btn btn--primary">Create Task</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const csrfToken = () => document.querySelector('meta[name="csrf-token"]').content;
+
+document.getElementById('list-new-task-btn')?.addEventListener('click', () => {
+    document.getElementById('list-task-modal').showModal();
+});
+document.getElementById('list-empty-new')?.addEventListener('click', () => {
+    document.getElementById('list-task-modal').showModal();
+});
+
+async function deleteTaskAndRow(taskId, btn) {
+    if (!confirm('Delete this task?')) return;
+    try {
+        const res = await fetch(`/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': csrfToken() },
+        });
+        if (res.ok) {
+            const row = btn.closest('tr');
+            row.style.transition = 'opacity 0.2s ease';
+            row.style.opacity = '0';
+            setTimeout(() => row.remove(), 200);
+        }
+    } catch (e) {
+        console.error('Delete failed:', e);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+:root {
+    --bg: #ffffff;
+    --bg-secondary: #F5F0FF;
+    --bg-card: #ffffff;
+    --bg-hover: #EDE6FC;
+    --border: #D4C8F5;
+    --border-light: #EAE2FB;
+    --text-primary: #1A1033;
+    --text-secondary: #6B5EA8;
+    --text-muted: #B8A8E8;
+    --accent: #A58FE8;
+    --accent-hover: #8B6FD4;
+    --accent-soft: #EDE6FC;
+    --low: #00A699;
+    --low-soft: #e6f7f6;
+    --medium: #FC642D;
+    --medium-soft: #fff3ee;
+    --high: #E84393;
+    --high-soft: #fce6f3;
+    --col-todo: #F5F0FF;
+    --col-todo-border: #D4C8F5;
+    --col-inprog: #FFF8F0;
+    --col-inprog-border: #FFD9B3;
+    --col-done: #F0FFF6;
+    --col-done-border: #B3F0CF;
+    --shadow-xs: 0 1px 2px rgba(107,94,168,0.06);
+    --shadow-sm: 0 1px 4px rgba(107,94,168,0.10), 0 2px 8px rgba(107,94,168,0.06);
+    --shadow-md: 0 4px 16px rgba(107,94,168,0.14), 0 2px 6px rgba(107,94,168,0.08);
+    --shadow-lg: 0 8px 32px rgba(107,94,168,0.18), 0 4px 12px rgba(107,94,168,0.12);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --transition: 0.18s ease;
+}
+
+[data-theme="dark"] {
+    --bg: #0E0B1A;
+    --bg-secondary: #150F28;
+    --bg-card: #1C1530;
+    --bg-hover: #251D3D;
+    --border: #352A5A;
+    --border-light: #2A2045;
+    --text-primary: #F0EAFF;
+    --text-secondary: #9B8DC8;
+    --text-muted: #5A4E80;
+    --accent: #C9B8F5;
+    --accent-hover: #A58FE8;
+    --accent-soft: #251D3D;
+    --low-soft: #0d2422;
+    --medium-soft: #2a1a0e;
+    --high-soft: #2a0d1e;
+    --col-todo: #150F28;
+    --col-todo-border: #2A2045;
+    --col-inprog: #1e1508;
+    --col-inprog-border: #3d2a10;
+    --col-done: #0e1e14;
+    --col-done-border: #1a3d28;
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.5);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.5);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.6);
+}

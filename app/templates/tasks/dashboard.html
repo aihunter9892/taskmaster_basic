@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — TaskFlow{% endblock %}
+
+{% block content %}
+{% set total = tasks_todo|length + tasks_in_progress|length + tasks_done|length %}
+{% set overdue = namespace(count=0) %}
+{% for t in tasks_todo + tasks_in_progress %}
+    {% if t.due_date and t.due_date < today %}{% set overdue.count = overdue.count + 1 %}{% endif %}
+{% endfor %}
+
+<div class="dashboard">
+    <!-- Header -->
+    <div class="dashboard__header">
+        <div class="dashboard__welcome">
+            <h1>Good {{ greeting }}, {{ current_user.username }}</h1>
+            <p>
+                {% if tasks_todo|length > 0 %}
+                    {{ tasks_todo|length }} task{{ 's' if tasks_todo|length != 1 }} to do
+                    {% if overdue.count > 0 %} · <span style="color:var(--high);">{{ overdue.count }} overdue</span>{% endif %}
+                {% else %}
+                    All caught up! Add a task to get started.
+                {% endif %}
+            </p>
+        </div>
+        <button class="btn btn--primary" data-open-modal>+ New Task</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <span class="stat-card__number">{{ total }}</span>
+            <span class="stat-card__label">Total</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-card__number">{{ tasks_todo|length }}</span>
+            <span class="stat-card__label">To Do</span>
+        </div>
+        <div class="stat-card stat-card--warning">
+            <span class="stat-card__number">{{ tasks_in_progress|length }}</span>
+            <span class="stat-card__label">In Progress</span>
+        </div>
+        <div class="stat-card stat-card--success">
+            <span class="stat-card__number">{{ tasks_done|length }}</span>
+            <span class="stat-card__label">Done</span>
+        </div>
+        {% if overdue.count > 0 %}
+        <div class="stat-card stat-card--danger">
+            <span class="stat-card__number">{{ overdue.count }}</span>
+            <span class="stat-card__label">Overdue</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Templates Strip -->
+    {% if templates %}
+    <div class="quick-templates">
+        <div class="quick-templates__header">
+            <span class="quick-templates__title">⚡ Quick Add</span>
+            <a href="{{ url_for('tasks.task_templates') }}" class="btn btn--ghost btn--sm">Manage</a>
+        </div>
+        <div class="quick-templates__grid">
+            {% for tmpl in templates %}
+            <form method="POST" action="{{ url_for('tasks.use_template', tmpl_id=tmpl.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="template-chip template-chip--priority-{{ tmpl.priority }}" title="{{ tmpl.description or tmpl.title }}{% if tmpl.estimated_minutes %} · {{ tmpl.estimated_minutes }}min{% endif %}">
+                    <span class="template-chip__emoji">{{ tmpl.emoji }}</span>
+                    {{ tmpl.title }}
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Category Panel -->
+    <div class="category-panel">
+        <div class="category-panel__header">
+            <span class="category-panel__title">Categories</span>
+            <button class="btn btn--ghost btn--sm" onclick="document.getElementById('add-cat-modal').showModal()">+ Add</button>
+        </div>
+        <div class="category-list">
+            {% for cat in categories %}
+            <span class="category-tag" style="background-color:{{ cat.color }}22; color:{{ cat.color }}; border-color:{{ cat.color }}44; font-size:0.8rem; padding:0.3rem 0.75rem; border-radius:100px; border:1px solid;">
+                {{ cat.name }}
+            </span>
+            {% else %}
+            <span style="color:var(--text-muted); font-size:0.85rem;">No categories yet</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="board">
+        <!-- To Do -->
+        <div class="column column--todo" data-status="todo">
+            <div class="column__header">
+                <span class="column__title">To Do</span>
+                <span class="badge">{{ tasks_todo|length }}</span>
+            </div>
+            <div class="column__body" id="col-todo">
+                {% for task in tasks_todo %}
+                    {% include 'tasks/partials/task_card.html' %}
+                {% else %}
+                    <div class="column__empty">Drop tasks here</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- In Progress -->
+        <div class="column column--inprog" data-status="in_progress">
+            <div class="column__header">
+                <span class="column__title">In Progress</span>
+                <span class="badge">{{ tasks_in_progress|length }}</span>
+            </div>
+            <div class="column__body" id="col-inprog">
+                {% for task in tasks_in_progress %}
+                    {% include 'tasks/partials/task_card.html' %}
+                {% else %}
+                    <div class="column__empty">Drop tasks here</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Done -->
+        <div class="column column--done" data-status="done">
+            <div class="column__header">
+                <span class="column__title">Done</span>
+                <span class="badge">{{ tasks_done|length }}</span>
+            </div>
+            <div class="column__body" id="col-done">
+                {% for task in tasks_done %}
+                    {% include 'tasks/partials/task_card.html' %}
+                {% else %}
+                    <div class="column__empty">Drop tasks here</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<dialog id="add-task-modal" class="modal">
+    <div class="modal__header">
+        <h2 class="modal__title">New Task</h2>
+        <button class="modal__close" id="modal-close" aria-label="Close">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('tasks.create_task') }}" novalidate>
+        {{ task_form.hidden_tag() }}
+        <div class="modal__body">
+            <div class="form-group">
+                <label class="form-label" for="m-title">Title *</label>
+                {{ task_form.title(class="form-control", id="m-title", placeholder="What needs to be done?") }}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="m-description">Description</label>
+                {{ task_form.description(class="form-control", id="m-description", placeholder="Optional details…", rows=3) }}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="m-priority">Priority</label>
+                    {{ task_form.priority(class="form-control", id="m-priority") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="m-status">Status</label>
+                    {{ task_form.status(class="form-control", id="m-status") }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="m-due_date">Due Date</label>
+                    {{ task_form.due_date(class="form-control", id="m-due_date") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="m-category_id">Category</label>
+                    {{ task_form.category_id(class="form-control", id="m-category_id") }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="m-est">Estimated Time (minutes)</label>
+                {{ task_form.estimated_minutes(class="form-control", id="m-est", placeholder="e.g. 30") }}
+            </div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--outline" onclick="document.getElementById('add-task-modal').close()">Cancel</button>
+            <button type="submit" class="btn btn--primary">Create Task</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- Add Category Modal -->
+<dialog id="add-cat-modal" class="modal">
+    <div class="modal__header">
+        <h2 class="modal__title">New Category</h2>
+        <button class="modal__close" onclick="document.getElementById('add-cat-modal').close()" aria-label="Close">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('tasks.create_category') }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal__body">
+            <div class="form-group">
+                <label class="form-label" for="cat-name">Name *</label>
+                <input type="text" class="form-control" id="cat-name" name="name" placeholder="e.g. Work, Personal" maxlength="100" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="cat-color">Color</label>
+                <input type="color" class="form-control" id="cat-color" name="color" value="#A58FE8" style="height:44px; padding:0.25rem;">
+            </div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--outline" onclick="document.getElementById('add-cat-modal').close()">Cancel</button>
+            <button type="submit" class="btn btn--primary">Create Category</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script src="{{ url_for('static', filename='js/dragdrop.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — TaskFlow{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-card__logo">
+            <span class="auth-card__logo-icon">✓</span>
+            TaskFlow
+        </div>
+
+        <h1 class="auth-card__title">Welcome back</h1>
+        <p class="auth-card__subtitle">Sign in to continue to your workspace</p>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                {{ form.email(class="form-control", id="email", placeholder="you@example.com", autocomplete="email") }}
+                {% for error in form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label" for="password">Password</label>
+                {{ form.password(class="form-control", id="password", placeholder="••••••••", autocomplete="current-password") }}
+                {% for error in form.password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full btn--lg">Sign In</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

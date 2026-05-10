@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Edit Task — TaskFlow{% endblock %}
+
+{% block content %}
+<div class="edit-page">
+    <div class="edit-page__header">
+        <a href="{{ url_for('tasks.dashboard') }}" class="btn btn--ghost btn--sm" style="margin-bottom:0.75rem;">← Back to board</a>
+        <h1>Edit Task</h1>
+        <p>Update the details for "{{ task.title }}"</p>
+    </div>
+
+    <div class="edit-card">
+        <form method="POST" action="{{ url_for('tasks.edit_task', task_id=task.id) }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                <label class="form-label" for="title">Title *</label>
+                {{ form.title(class="form-control", id="title", placeholder="What needs to be done?") }}
+                {% for error in form.title.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="description">Description</label>
+                {{ form.description(class="form-control", id="description", placeholder="Add details, notes or context…", rows=4) }}
+                {% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="priority">Priority</label>
+                    {{ form.priority(class="form-control", id="priority") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="status">Status</label>
+                    {{ form.status(class="form-control", id="status") }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="due_date">Due Date</label>
+                    {{ form.due_date(class="form-control", id="due_date") }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="category_id">Category</label>
+                    {{ form.category_id(class="form-control", id="category_id") }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="estimated_minutes">Estimated Time (minutes)</label>
+                {{ form.estimated_minutes(class="form-control", id="estimated_minutes", placeholder="e.g. 30") }}
+            </div>
+
+            <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+                <button type="submit" class="btn btn--primary">Save Changes</button>
+                <a href="{{ url_for('tasks.dashboard') }}" class="btn btn--outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
